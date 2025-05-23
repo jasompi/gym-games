@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from gym.envs.classic_control.mountain_car import MountainCarEnv
+from gymnasium.envs.classic_control.mountain_car import MountainCarEnv
 
 
 class SparseMountainCarEnv(MountainCarEnv):
@@ -32,25 +32,33 @@ class SparseMountainCarEnv(MountainCarEnv):
       reward = 0.0
 
     self.state = (position, velocity)
-    return np.array(self.state), reward, done, {}
+    terminated = done # In MountainCar, 'done' usually means termination (goal reached)
+    truncated = False # MountainCar is often wrapped with TimeLimit for truncation
+    return np.array(self.state, dtype=np.float32), reward, terminated, truncated, {}
 
 
 
 if __name__ == '__main__':
   env = SparseMountainCarEnv()
-  env.seed(0)
+  # env.seed(0) # Old API; seeding is now done via reset
+  obs, info = env.reset(seed=0) # Initial reset with seed
+
   print('Action space:', env.action_space)
   print('Obsevation space:', env.observation_space)
   print('Obsevation space high:', env.observation_space.high)
   print('Obsevation space low:', env.observation_space.low)
 
   for i in range(1):
-    ob = env.reset()
-    for _ in range(10):
+    # obs, info = env.reset(seed=i) # Reset for each episode if desired, obs is already from initial reset
+    print('Initial Observation:', obs)
+    for _ in range(10): # MountainCar can take many steps, 10 is just for a quick test
       action = env.action_space.sample()
-      ob, reward, done, _ = env.step(action)
-      print('Observation:', ob)
+      obs, reward, terminated, truncated, info = env.step(action) # Gymnasium API
+      done = terminated or truncated
+      print('Observation:', obs)
       print('Reward:', reward)
+      print('Terminated:', terminated)
+      print('Truncated:', truncated)
       print('Done:', done)
       if done:
         break
