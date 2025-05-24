@@ -30,14 +30,16 @@ class BaseEnv(gym.Env):
         self.state_processor = self.get_ob
         
     # PLE handles its own display_screen logic based on SDL_VIDEODRIVER
-    self.gameOb = PLE(self.game, fps=30, state_preprocessor=self.state_processor, display_screen=display)
+    # Set state_preprocessor=None so gameOb.getGameState() returns the raw dict
+    self.gameOb = PLE(self.game, fps=30, state_preprocessor=None, display_screen=display)
     
     self.viewer = None
     self.action_set = self.gameOb.getActionSet()
     self.action_space = spaces.Discrete(len(self.action_set))
     
     # Determine observation space shape from a sample processed observation
-    _sample_raw_state = self.game.getGameState()
+    # Get raw state from gameOb (which should be same as self.game.getGameState() now)
+    _sample_raw_state = self.gameOb.getGameState() 
     _sample_processed_state = self.state_processor(_sample_raw_state)
     self.observation_space = spaces.Box(-np.inf, np.inf, shape=_sample_processed_state.shape, dtype=np.float32)
     
