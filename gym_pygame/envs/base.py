@@ -7,11 +7,12 @@ from ple import PLE
 
 
 class BaseEnv(gym.Env):
-  metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 30} # Corrected metadata key
+  metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 30} 
 
-  def __init__(self, game_name='DefaultGame', normalize=False, display=False, **kwargs): # game_name must be passed by subclasses
+  def __init__(self, game_name='DefaultGame', normalize=False, display=False, render_mode=None, **kwargs): # game_name must be passed by subclasses
     super().__init__()
-    self.game_name = game_name # This should be set by the subclass before calling super().__init__ or this method
+    self.render_mode = render_mode # Store render_mode
+    self.game_name = game_name 
     
     game_module_name = f'ple.games.{self.game_name.lower()}'
     game_module = importlib.import_module(game_module_name)
@@ -33,7 +34,7 @@ class BaseEnv(gym.Env):
     # Set state_preprocessor=None so gameOb.getGameState() returns the raw dict
     self.gameOb = PLE(self.game, fps=30, state_preprocessor=None, display_screen=display)
     
-    self.viewer = None
+    # self.viewer = None # Removed
     self.action_set = self.gameOb.getActionSet()
     self.action_space = spaces.Discrete(len(self.action_set))
     
@@ -83,20 +84,17 @@ class BaseEnv(gym.Env):
   
   # Old seed method removed
 
-  def render(self, mode='human'):
-    # img = self.gameOb.getScreenRGB() 
-    # img = self.gameOb.getScreenGrayscale()
-    img = np.fliplr(np.rot90(self.gameOb.getScreenRGB(),3))
-    if mode == 'rgb_array':
-      return img
-    elif mode == 'human':
-      from gymnasium.envs.classic_control import rendering
-      if self.viewer is None:
-        self.viewer = rendering.SimpleImageViewer()
-      self.viewer.imshow(img)
+  def render(self): # Removed mode argument, will use self.render_mode if specific logic needed
+    # This method is called by wrappers like RecordVideo or HumanRendering.
+    # It should return an np.ndarray if self.render_mode is 'rgb_array' or 'human' (for video recording).
+    # If self.render_mode is 'human', PLE should be displaying to a window via display_screen=True.
+    img = np.fliplr(np.rot90(self.gameOb.getScreenRGB(), 3))
+    return img
 
   def close(self):
-    if self.viewer != None:
-      self.viewer.close()
-      self.viewer = None
+    # self.viewer related code removed.
+    # PLE does not have an explicit close() method for the PLE object itself.
+    # Pygame display (if any) is managed by PLE internally.
+    # pygame.quit() could be called here if we were sure this env instance was the only pygame user.
+    # For now, relying on PLE's internal handling or script exit for Pygame cleanup.
     return 0

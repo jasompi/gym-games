@@ -9,9 +9,16 @@ from gym_pygame.envs.base import BaseEnv
 
 
 class PixelcopterEnv(BaseEnv):
-  def __init__(self, normalize=False, display=False, **kwargs):
+  def __init__(self, normalize=False, render_mode=None, **kwargs): # Removed display, added render_mode
     self.game_name = 'Pixelcopter' # Must be set before calling super().__init__
-    super().__init__(game_name=self.game_name, normalize=normalize, display=display, **kwargs)
+
+    display_screen = True if render_mode == 'human' else False
+
+    super().__init__(game_name=self.game_name, 
+                     normalize=normalize, 
+                     display=display_screen, 
+                     render_mode=render_mode, 
+                     **kwargs)
     
   def get_ob_normalize(self, state_dict): # Changed to state_dict for consistency with BaseEnv
     state_normal = self.get_ob(state_dict) # Use self.get_ob from BaseEnv

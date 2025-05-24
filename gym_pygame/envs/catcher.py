@@ -9,11 +9,19 @@ from gym_pygame.envs.base import BaseEnv
 
 
 class CatcherEnv(BaseEnv):
-  def __init__(self, normalize=True, display=False, **kwargs):
+  def __init__(self, normalize=True, render_mode=None, **kwargs): # Removed display, added render_mode
     self.game_name = 'Catcher' # Must be set before calling super().__init__
+    
+    display_screen = True if render_mode == 'human' else False
+    
     # Pass ple_game_kwargs if any specific to Catcher game itself,
     # otherwise BaseEnv will pass an empty dict.
-    super().__init__(game_name=self.game_name, normalize=normalize, display=display, **kwargs)
+    # BaseEnv.__init__ expects: game_name, normalize, display, render_mode, **kwargs (for ple_game_kwargs)
+    super().__init__(game_name=self.game_name, 
+                     normalize=normalize, 
+                     display=display_screen, 
+                     render_mode=render_mode, 
+                     **kwargs)
     
   def get_ob_normalize(self, state_dict): # Parameter name changed for clarity
     state_normal = self.get_ob(state_dict) # Use self.get_ob from BaseEnv
